@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FM26 联赛管理系统</title>
+    <style>
+        /* ==================== 全局样式 ==================== */
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent: #e94560;
+            --accent-hover: #ff6b6b;
+            --success: #4ecca3;
+            --warning: #ffc107;
+            --border: #2a2a4e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ==================== 导航栏 ==================== */
+        .navbar {
+            background: var(--bg-secondary);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* ==================== 主容器 ==================== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ==================== 页面切换 ==================== */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ==================== 卡片样式 ==================== */
+        .card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        /* ==================== 表格样式 ==================== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-secondary);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .rank-1 { color: #ffd700; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+
+        /* ==================== 表单样式 ==================== */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        /* ==================== 按钮样式 ==================== */
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* ==================== 网格布局 ==================== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        /* ==================== 统计卡片 ==================== */
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* ==================== 消息提示 ==================== */
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert-success {
+            background: rgba(78, 204, 163, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(233, 69, 96, 0.2);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        /* ==================== 加载动画 ==================== */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .nav-btn {
+                flex: 1;
+                text-align: center;
+                font-size: 0.9rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==================== 徽章样式 ==================== */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .badge-confirmed {
+            background: var(--success);
+            color: #000;
+        }
+
+        .badge-crawler {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .badge-manual {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">⚽ FM26 联赛管理系统</div>
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="showPage('standings')">📊 积分榜</button>
+            <button class="nav-btn" onclick="showPage('cup-standings')">🏆 杯赛</button>
+            <button class="nav-btn" onclick="showPage('match-entry')">⚽ 比赛录入</button>
+            <button class="nav-btn" onclick="showPage('schedule')">📅 联赛赛程</button>
+            <button class="nav-btn" onclick="showPage('cup-schedule')">🏆 杯赛赛程</button>
+            <button class="nav-btn" onclick="showPage('transfer')">💰 交易</button>
+            <button class="nav-btn" onclick="showPage('announcement')">📢 公告</button>
+            <button class="nav-btn" onclick="showPage('settings')">⚙️ 设置</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 消息提示 -->
+        <div id="alert-success" class="alert alert-success"></div>
+        <div id="alert-error" class="alert alert-error"></div>
+
+        <!-- 积分榜页面 -->
+        <div id="standings" class="page active">
+            <div class="card">
+                <h2 class="card-title">📊 联赛积分榜</h2>
+                <div id="standings-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载积分榜...</p>
+                </div>
+                <table id="standings-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>球队</th>
+                            <th>场次</th>
+                            <th>胜</th>
+                            <th>平</th>
+                            <th>负</th>
+                            <th>进球</th>
+                            <th>失球</th>
+                            <th>净胜</th>
+                            <th>积分</th>
+                        </tr>
+                    </thead>
+                    <tbody id="standings-body"></tbody>
+                </table>
+            </div>
+
+            <div class="grid-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-teams">-</div>
+                    <div class="stat-label">参赛球队</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-matches">-</div>
+                    <div class="stat-label">已赛场次</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-goals">-</div>
+                    <div class="stat-label">总进球数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 杯赛积分榜页面 -->
+        <div id="cup-standings" class="page">
+            <div class="card">
+                <h2 class="card-title">🏆 杯赛积分榜</h2>
+                <div class="form-group" style="max-width: 300px; margin-bottom: 1rem;">
+                    <label>选择杯赛组别</label>
+                    <select id="cup-group-filter" onchange="loadCupStandings()">
+                        <option value="">全部组别</option>
+                        <option value="A 组">A 组</option>
+                        <option value="B 组">B 组</option>
+                        <option value="C 组">C 组</option>
+                        <option value="D 组">D 组</option>
+                        <option value="淘汰赛">淘汰赛</option>
+                    </select>
+                </div>
+                <div id="cup-standings-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载杯赛积分榜...</p>
+                </div>
+                <table id="cup-standings-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>球队</th>
+                            <th>组别</th>
+                            <th>场次</th>
+                            <th>胜</th>
+                            <th>平</th>
+                            <th>负</th>
+                            <th>进球</th>
+                            <th>失球</th>
+                            <th>净胜</th>
+                            <th>积分</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cup-standings-body"></tbody>
+                </table>
+            </div>
+
+            <div class="grid-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="cup-stat-teams">-</div>
+                    <div class="stat-label">参赛球队</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cup-stat-matches">-</div>
+                    <div class="stat-label">已赛场次</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cup-stat-goals">-</div>
+                    <div class="stat-label">总进球数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 比赛录入页面 -->
+        <div id="match-entry" class="page">
+            <div class="grid-2">
+                <div class="card">
+                    <h2 class="card-title">⚽ 录入比赛结果</h2>
+                    <form id="match-form" onsubmit="submitMatch(event)">
+                        <div class="form-group">
+                            <label>比赛类型 *</label>
+                            <select id="match-type" required onchange="toggleMatchFields()">
+                                <option value="league">联赛</option>
+                                <option value="cup">杯赛</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group" id="league-round-group">
+                                <label>轮次 *</label>
+                                <input type="number" id="match-round" min="1" placeholder="例如：1">
+                            </div>
+                            <div class="form-group" id="cup-stage-group" style="display: none;">
+                                <label>阶段 *</label>
+                                <select id="match-stage">
+                                    <option value="">选择阶段</option>
+                                    <option value="小组赛">小组赛</option>
+                                    <option value="16 强">16 强</option>
+                                    <option value="8 强">8 强</option>
+                                    <option value="4 强">4 强</option>
+                                    <option value="决赛">决赛</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="cup-group-group" style="display: none;">
+                            <label>组别</label>
+                            <select id="match-group">
+                                <option value="">选择组别</option>
+                                <option value="A 组">A 组</option>
+                                <option value="B 组">B 组</option>
+                                <option value="C 组">C 组</option>
+                                <option value="D 组">D 组</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>主队 *</label>
+                                <select id="match-home" required>
+                                    <option value="">选择主队</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>客队 *</label>
+                                <select id="match-away" required>
+                                    <option value="">选择客队</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>主队比分 *</label>
+                                <input type="number" id="match-home-score" required min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>客队比分 *</label>
+                                <input type="number" id="match-away-score" required min="0" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>比赛日期</label>
+                            <input type="date" id="match-date">
+                        </div>
+
+                        <div class="form-group">
+                            <label>备注</label>
+                            <textarea id="match-note" rows="2" placeholder="可选填写"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-block">提交比赛结果</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">📝 最近录入</h2>
+                    <div id="recent-matches-loading" class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <table id="recent-matches-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>轮次</th>
+                                <th>对阵</th>
+                                <th>比分</th>
+                                <th>日期</th>
+                                <th>来源</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-matches-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 赛程页面 -->
+        <div id="schedule" class="page">
+            <div class="card">
+                <h2 class="card-title">📅 联赛赛程</h2>
+                <div class="form-group" style="max-width: 300px;">
+                    <label>筛选轮次</label>
+                    <select id="schedule-round-filter" onchange="filterSchedule()">
+                        <option value="">全部轮次</option>
+                    </select>
+                </div>
+                <div id="schedule-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <table id="schedule-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>轮次</th>
+                            <th>比赛日期</th>
+                            <th>主队</th>
+                            <th>比分</th>
+                            <th>客队</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 杯赛赛程页面 -->
+        <div id="cup-schedule" class="page">
+            <div class="card">
+                <h2 class="card-title">🏆 杯赛赛程</h2>
+                <div class="form-group" style="max-width: 300px;">
+                    <label>筛选阶段</label>
+                    <select id="cup-schedule-stage-filter" onchange="loadCupSchedule()">
+                        <option value="">全部阶段</option>
+                        <option value="小组赛">小组赛</option>
+                        <option value="16 强">16 强</option>
+                        <option value="8 强">8 强</option>
+                        <option value="4 强">4 强</option>
+                        <option value="决赛">决赛</option>
+                    </select>
+                </div>
+                <div id="cup-schedule-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <table id="cup-schedule-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>阶段</th>
+                            <th>组别</th>
+                            <th>比赛日期</th>
+                            <th>主队</th>
+                            <th>比分</th>
+                            <th>客队</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cup-schedule-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 交易页面 -->
+        <div id="transfer" class="page">
+            <div class="grid-2">
+                <div class="card">
+                    <h2 class="card-title">💰 提交交易申请</h2>
+                    <form id="transfer-form" onsubmit="submitTransfer(event)">
+                        <div class="form-group">
+                            <label>球员姓名 *</label>
+                            <input type="text" id="transfer-player" required placeholder="球员名字">
+                        </div>
+
+                        <div class="form-group">
+                            <label>位置</label>
+                            <select id="transfer-position">
+                                <option value="">选择位置</option>
+                                <option value="前锋">前锋</option>
+                                <option value="中场">中场</option>
+                                <option value="后卫">后卫</option>
+                                <option value="门将">门将</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>转出球队 *</label>
+                                <select id="transfer-from" required>
+                                    <option value="">选择转出球队</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>转入球队 *</label>
+                                <select id="transfer-to" required>
+                                    <option value="">选择转入球队</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>交易类型 *</label>
+                            <select id="transfer-type" required>
+                                <option value="">选择类型</option>
+                                <option value="买卖">买卖</option>
+                                <option value="交换">交换</option>
+                                <option value="自由签约">自由签约</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>交易金额</label>
+                            <input type="number" id="transfer-amount" placeholder="可选">
+                        </div>
+
+                        <button type="submit" class="btn btn-block">提交交易申请</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">📋 交易记录</h2>
+                    <div id="transfers-loading" class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <table id="transfers-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>球员</th>
+                                <th>转出</th>
+                                <th>转入</th>
+                                <th>类型</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transfers-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公告页面 -->
+        <div id="announcement" class="page">
+            <div class="card">
+                <h2 class="card-title">📢 联赛公告</h2>
+                <div id="announcements-loading" class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <div id="announcements-list"></div>
+            </div>
+        </div>
+
+        <!-- 设置页面 -->
+        <div id="settings" class="page">
+            <div class="card">
+                <h2 class="card-title">⚙️ API 配置</h2>
+                <div class="form-group">
+                    <label>简道云 App ID</label>
+                    <input type="text" id="config-app-id" placeholder="输入你的 App ID">
+                </div>
+                <div class="form-group">
+                    <label>简道云 API Key</label>
+                    <input type="text" id="config-api-key" placeholder="输入你的 API Key">
+                </div>
+                <div class="form-group">
+                    <label>比赛记录表 ID</label>
+                    <input type="text" id="config-match-table" placeholder="输入表 ID">
+                </div>
+                <div class="form-group">
+                    <label>球队信息表 ID</label>
+                    <input type="text" id="config-team-table" placeholder="输入表 ID">
+                </div>
+                <div class="form-group">
+                    <label>交易记录表 ID</label>
+                    <input type="text" id="config-transfer-table" placeholder="输入表 ID">
+                </div>
+                <div class="form-group">
+                    <label>公告表 ID</label>
+                    <input type="text" id="config-announcement-table" placeholder="输入表 ID">
+                </div>
+                <div class="form-group">
+                    <label>杯赛记录表 ID</label>
+                    <input type="text" id="config-cup-table" placeholder="输入杯赛表 ID">
+                </div>
+                <button class="btn" onclick="saveConfig()">保存配置</button>
+                <button class="btn btn-secondary" onclick="testConnection()">测试连接</button>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">📖 使用说明</h2>
+                <ol style="padding-left: 1.5rem; line-height: 2;">
+                    <li>首次使用请先在「设置」页面配置简道云 API 信息</li>
+                    <li>配置完成后，在「比赛录入」页面提交比赛结果</li>
+                    <li>数据会自动同步到简道云，并实时更新积分榜</li>
+                    <li>后续可在你的云服务器上部署爬虫，自动抓取论坛数据</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
