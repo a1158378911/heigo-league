@@ -1,0 +1,10 @@
+# Render 部署配置
+services:
+  - type: web
+    name: heigo-league
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true

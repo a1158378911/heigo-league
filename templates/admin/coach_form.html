@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}{{ '编辑教练' if coach else '添加教练' }} - HEIGO联赛管理{% endblock %}
+
+{% block extra_js %}
+<script>
+function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+        document.getElementById('avatarMsg').textContent = '文件大小不能超过5MB';
+        document.getElementById('avatarMsg').style.color = 'var(--accent-red)';
+        return;
+    }
+    var formData = new FormData();
+    formData.append('avatar', file);
+    var msg = document.getElementById('avatarMsg');
+    msg.textContent = '上传中...';
+    msg.style.color = 'var(--text-muted)';
+    fetch('/admin/upload/avatar', { method: 'POST', body: formData })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                document.getElementById('avatarUrl').value = data.url;
+                var preview = document.getElementById('avatarPreview');
+                preview.innerHTML = '<img src="' + data.url + '" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+                msg.textContent = '上传成功！';
+                msg.style.color = 'var(--accent-green)';
+            } else {
+                msg.textContent = data.error || '上传失败';
+                msg.style.color = 'var(--accent-red)';
+            }
+        })
+        .catch(function() {
+            msg.textContent = '上传失败，请重试';
+            msg.style.color = 'var(--accent-red)';
+        });
+}
+
+function removeAvatar() {
+    document.getElementById('avatarUrl').value = '';
+    var preview = document.getElementById('avatarPreview');
+    preview.innerHTML = '<div class="avatar-placeholder"><span style="font-size:2rem;">📷</span><span style="font-size:0.8rem;color:var(--text-muted);">点击上传头像</span></div>';
+    document.getElementById('avatarMsg').textContent = '头像已移除';
+    document.getElementById('avatarMsg').style.color = 'var(--accent-orange)';
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{{ url_for('main.index') }}">首页</a>
+    <span class="separator">/</span>
+    <a href="{{ url_for('admin.dashboard') }}">管理面板</a>
+    <span class="separator">/</span>
+    <span>{{ '编辑教练' if coach else '添加教练' }}</span>
+</div>
+
+<div class="form-page">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 32px;">
+        <h2>{{ '✏️ 编辑教练信息' if coach else '➕ 添加新教练' }}</h2>
+
+        <form method="POST" accept-charset="UTF-8" onsubmit="return validateForm(this)">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>游戏ID *</label>
+                    <input type="text" name="game_id" class="form-input" value="{{ coach.game_id if coach else '' }}" placeholder="游戏中的ID" required>
+                </div>
+                <div class="form-group">
+                    <label>执教俱乐部 *</label>
+                    <input type="text" name="club_name" class="form-input" value="{{ coach.club_name if coach else '' }}" placeholder="执教的俱乐部名称" required>
+                </div>
+                <div class="form-group">
+                    <label>联赛级别 *</label>
+                    <select name="league_level" class="form-select" required>
+                        <option value="超级" {% if coach and coach.league_level == '超级' %}selected{% endif %}>🏆 超级联赛</option>
+                        <option value="甲级" {% if coach and coach.league_level == '甲级' %}selected{% endif %}>🥈 甲级联赛</option>
+                        <option value="乙级" {% if coach and coach.league_level == '乙级' %}selected{% endif %}>🥉 乙级联赛</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>综合评级 *</label>
+                    <div style="display: flex; gap: 12px;">
+                        <select name="rating" class="form-select" required style="flex: 1;">
+                            <option value="S" {% if coach and coach.rating == 'S' %}selected{% endif %}>S 级（传奇）</option>
+                            <option value="A" {% if coach and coach.rating == 'A' %}selected{% endif %}>A 级（优秀）</option>
+                            <option value="B" {% if coach and coach.rating == 'B' %}selected{% endif %}>B 级（良好）</option>
+                            <option value="C" {% if coach and coach.rating == 'C' %}selected{% endif %}>C 级（普通）</option>
+                        </select>
+                        <select name="stars" class="form-select" required style="flex: 1;">
+                            <option value="1" {% if coach and coach.stars == 1 %}selected{% endif %}>★☆☆☆☆ 1星</option>
+                            <option value="2" {% if coach and coach.stars == 2 %}selected{% endif %}>★★☆☆☆ 2星</option>
+                            <option value="3" {% if coach and coach.stars == 3 %}selected{% endif %}>★★★☆☆ 3星</option>
+                            <option value="4" {% if coach and coach.stars == 4 %}selected{% endif %}>★★★★☆ 4星</option>
+                            <option value="5" {% if coach and coach.stars == 5 %}selected{% endif %}>★★★★★ 5星</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>加入联赛时间</label>
+                    <input type="text" name="join_date" class="form-input" value="{{ coach.join_date if coach else '' }}" placeholder="例如: 2024赛季">
+                </div>
+                <div class="form-group">
+                    <label>论坛ID</label>
+                    <input type="text" name="forum_id" class="form-input" value="{{ coach.forum_id if coach else '' }}" placeholder="论坛上的ID">
+                </div>
+                <div class="form-group full-width">
+                    <label>职业生涯</label>
+                    <input type="text" name="career" class="form-input" value="{{ coach.career if coach else '' }}" placeholder="例如: 2020-2022执教曼联,2023至今执教皇马">
+                </div>
+                <div class="form-group full-width">
+                    <label>冠军荣誉</label>
+                    <input type="text" name="honors" class="form-input" value="{{ coach.honors if coach else '' }}" placeholder="多个荣誉用英文逗号分隔，例如: 2023超级联赛冠军,2022杯赛冠军">
+                </div>
+                <div class="form-group full-width">
+                    <label>座右铭</label>
+                    <input type="text" name="motto" class="form-input" value="{{ coach.motto if coach else '' }}" placeholder="一句话介绍自己">
+                </div>
+                <div class="form-group full-width">
+                    <label>头像上传</label>
+                    <div class="avatar-upload-area">
+                        <div class="avatar-preview" id="avatarPreview">
+                            {% if coach and coach.avatar %}
+                            <img src="{{ coach.avatar }}" alt="头像" id="avatarPreviewImg">
+                            {% else %}
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <span style="font-size: 2rem;">📷</span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">点击上传头像</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <input type="file" id="avatarFile" name="avatar" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;" onchange="uploadAvatar(this)">
+                        <input type="hidden" name="avatar_url" id="avatarUrl" value="{{ coach.avatar if coach else '' }}">
+                        <div class="avatar-actions">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarFile').click()">
+                                📷 选择图片
+                            </button>
+                            {% if coach and coach.avatar %}
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeAvatar()">
+                                🗑️ 移除头像
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div id="avatarMsg" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary">
+                    {{ '💾 保存修改' if coach else '➕ 添加教练' }}
+                </button>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

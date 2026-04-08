@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - HEIGO足球经理联机联赛{% endblock %}
+
+{% block content %}
+<!-- Hero区域 -->
+<section class="hero">
+    <div class="hero-badge">
+        <span>⚽</span>
+        <span>Football Manager Online League</span>
+    </div>
+    <h1>HEIGO足球经理联机联赛</h1>
+    <p>汇聚热爱足球经理的玩家，在绿茵场上书写属于你的传奇故事</p>
+
+    <!-- 搜索框 -->
+    <div class="search-section" style="max-width: 560px; margin: 0 auto;">
+        <div class="search-bar">
+            <div class="search-input-wrapper">
+                <img src="{{ url_for('static', filename='img/search.png') }}" alt="" class="search-icon-img">
+                <input type="text" id="searchInput" class="search-input"
+                       placeholder="搜索教练ID、俱乐部名称..." autocomplete="off" formnovalidate>
+                <div id="searchDropdown" class="search-dropdown"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 统计数据 -->
+<section class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_coaches }}</div>
+        <div class="stat-label">注册教练</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">联赛级别</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">85</div>
+        <div class="stat-label">当前赛季</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="realtime-clock">--:--:--</div>
+        <div class="stat-label">实时时间</div>
+    </div>
+</section>
+
+<!-- ==================== 评级榜 & 冠军排行榜 ==================== -->
+<section class="boards-section">
+    <div class="boards-grid">
+        <!-- 评级榜 -->
+        <div class="board-card">
+            <div class="board-header">
+                <div class="board-title">
+                    <img src="{{ url_for('static', filename='img/rating.png') }}" alt="评级" class="board-icon-img">
+                    <span>评级排行榜</span>
+                </div>
+                <span class="board-subtitle">TOP 10</span>
+            </div>
+            <div class="board-list">
+                {% for coach in rating_board %}
+                <a href="{{ url_for('main.coach_detail', coach_id=coach.id) }}" class="board-item">
+                    <span class="board-rank {% if loop.index <= 3 %}board-rank-top{% endif %}">
+                        {{ loop.index }}
+                    </span>
+                    <div class="board-item-info">
+                        <span class="board-item-name">{{ coach.game_id }}</span>
+                        <span class="board-item-club">{{ coach.club_name }}</span>
+                    </div>
+                    <div class="board-item-rating">
+                        <span class="rating-badge rating-{{ coach.rating|lower }}">{{ coach.rating }}</span>
+                        <span class="rating-stars">{{ coach.stars_display }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 冠军排行榜 -->
+        <div class="board-card">
+            <div class="board-header">
+                <div class="board-title">
+                    <img src="{{ url_for('static', filename='img/champion.png') }}" alt="冠军" class="board-icon-img">
+                    <span>冠军排行榜</span>
+                </div>
+                <span class="board-subtitle">TOP 10</span>
+            </div>
+            <div class="board-list">
+                {% for coach in honor_board %}
+                <a href="{{ url_for('main.coach_detail', coach_id=coach.id) }}" class="board-item">
+                    <span class="board-rank {% if loop.index <= 3 %}board-rank-top{% endif %}">
+                        {{ loop.index }}
+                    </span>
+                    <div class="board-item-info">
+                        <span class="board-item-name">{{ coach.game_id }}</span>
+                        <span class="board-item-club">{{ coach.club_name }}</span>
+                    </div>
+                    <div class="board-item-honors">
+                        {% if coach.honor_count > 0 %}
+                        <span class="honor-count-badge"><img src="{{ url_for('static', filename='img/trophy.png') }}" alt="" class="trophy-icon-img"> {{ coach.honor_count }}</span>
+                        {% else %}
+                        <span class="honor-count-zero">-</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 联赛级别展示 -->
+{% for level in ['超级', '甲级', '乙级'] %}
+{% set data = league_data[level] %}
+<section class="league-section">
+    <div class="league-header">
+        {% if level == '超级' %}
+        <span class="league-badge super">🏆 超级</span>
+        {% elif level == '甲级' %}
+        <span class="league-badge first">🥈 甲级</span>
+        {% else %}
+        <span class="league-badge second">🥉 乙级</span>
+        {% endif %}
+        <h2 class="league-title">{{ data.label }}</h2>
+        <span class="league-count">{{ data.coaches|length }} 名教练</span>
+    </div>
+
+    {% if data.coaches %}
+    <div class="coach-grid">
+        {% for coach in data.coaches %}
+        <a href="{{ url_for('main.coach_detail', coach_id=coach.id) }}" class="coach-card" style="text-decoration:none;">
+            <div class="coach-card-header">
+                <div class="coach-avatar">
+                    {% if coach.avatar %}
+                    <img src="{{ coach.avatar }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                    {% else %}
+                    {{ coach.game_id[0] if coach.game_id else '?' }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="coach-card-name">{{ coach.game_id }}</div>
+                    <div class="coach-card-club">{{ coach.club_name }}</div>
+                </div>
+            </div>
+            <div class="coach-card-stats">
+                <div class="coach-stat">
+                    <span class="coach-stat-icon">📅</span>
+                    <span>加入: {{ coach.join_date or '未知' }}</span>
+                </div>
+                <div class="coach-stat">
+                    <img src="{{ url_for('static', filename='img/comment.png') }}" alt="" class="stat-icon-img">
+                    <span>评论: {{ coach.comment_count }}</span>
+                </div>
+            </div>
+            <div class="coach-card-footer">
+                <div class="coach-card-rating">
+                    <span class="rating-badge rating-{{ coach.rating|lower }}">{{ coach.rating }}</span>
+                    <span class="rating-stars-sm">{{ coach.stars_display }}</span>
+                </div>
+                <div class="coach-meta">
+                    <span><img src="{{ url_for('static', filename='img/like.png') }}" alt="" class="like-icon-img"> {{ coach.total_likes }}</span>
+                    {% if coach.honor_count > 0 %}
+                    <span><img src="{{ url_for('static', filename='img/trophy.png') }}" alt="" class="trophy-icon-img"> {{ coach.honor_count }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🏟️</div>
+        <h3>暂无教练数据</h3>
+        <p>等待教练加入{{ data.label }}...</p>
+    </div>
+    {% endif %}
+</section>
+{% endfor %}
+
+<!-- 快速入口 -->
+<section style="text-align: center; margin-top: 20px;">
+    <a href="{{ url_for('main.coach_list') }}" class="btn btn-primary" style="padding: 14px 40px; font-size: 1.05rem;">
+        👥 查看全部教练
+    </a>
+</section>
+{% endblock %}
