@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}管理面板 - HEIGO联赛{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{{ url_for('main.index') }}">首页</a>
+    <span class="separator">/</span>
+    <span>管理面板</span>
+</div>
+
+<div class="admin-layout">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-title">管理菜单</div>
+        <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-item active">
+            📊 数据总览
+        </a>
+        <a href="{{ url_for('admin.create_coach') }}" class="admin-nav-item">
+            ➕ 添加教练
+        </a>
+        <a href="{{ url_for('main.coach_list') }}" class="admin-nav-item">
+            👥 教练列表
+        </a>
+        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0;">
+        <a href="{{ url_for('admin.admin_logout') }}" class="admin-nav-item">
+            🚪 退出登录
+        </a>
+    </aside>
+
+    <!-- 主内容 -->
+    <div class="admin-content">
+        <div class="admin-header">
+            <h2>📊 数据总览</h2>
+            <a href="{{ url_for('admin.create_coach') }}" class="btn btn-primary btn-sm">
+                ➕ 添加教练
+            </a>
+        </div>
+
+        <!-- 统计 -->
+        <div class="stats-grid" style="margin-bottom: 24px;">
+            <div class="stat-card">
+                <div class="stat-number">{{ level_stats.get('超级', 0) }}</div>
+                <div class="stat-label">🏆 超级联赛</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ level_stats.get('甲级', 0) }}</div>
+                <div class="stat-label">🥈 甲级联赛</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ level_stats.get('乙级', 0) }}</div>
+                <div class="stat-label">🥉 乙级联赛</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ coaches|length }}</div>
+                <div class="stat-label">📋 教练总数</div>
+            </div>
+        </div>
+
+        <!-- 教练列表 -->
+        {% if coaches %}
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>游戏ID</th>
+                        <th>俱乐部</th>
+                        <th>级别</th>
+                        <th>评级</th>
+                        <th>冠军</th>
+                        <th>加入时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coach in coaches %}
+                    <tr>
+                        <td>{{ coach.id }}</td>
+                        <td><a href="{{ url_for('main.coach_detail', coach_id=coach.id) }}" style="color: var(--accent-blue); font-weight: 600;">{{ coach.game_id }}</a></td>
+                        <td>{{ coach.club_name }}</td>
+                        <td>
+                            <span class="level-tag {% if coach.league_level == '超级' %}super{% elif coach.league_level == '甲级' %}first{% else %}second{% endif %}">
+                                {{ coach.league_level }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="rating-badge rating-{{ coach.rating|lower }}">{{ coach.rating }}</span>
+                            <span class="rating-stars-sm" style="margin-left: 4px;">{{ coach.stars_display }}</span>
+                        </td>
+                        <td style="color: var(--accent-gold); font-weight: 600;">🏆 {{ coach.honor_count }}</td>
+                        <td style="color: var(--text-muted);">{{ coach.join_date or '-' }}</td>
+                        <td class="actions">
+                            <a href="{{ url_for('admin.edit_coach', coach_id=coach.id) }}" class="btn btn-secondary btn-sm">✏️ 编辑</a>
+                            <form method="POST" action="{{ url_for('admin.delete_coach', coach_id=coach.id) }}" style="display: inline;" onsubmit="return confirmDelete('确定要删除教练 {{ coach.game_id }} 吗？')">
+                                <button type="submit" class="btn btn-danger btn-sm">🗑️ 删除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <h3>暂无教练数据</h3>
+            <p>点击"添加教练"开始录入数据</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
